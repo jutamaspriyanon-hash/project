@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Retail Executive Analytics Dashboard</title>
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- D3.js Library v7 -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <i class="fa-solid fa-chart-line logo-icon"></i>
+      <span>Online Retail Analytics Dashboard 📊</span>
+    </div>
+    <div class="subtitle">วิเคราะห์ข้อมูลการขายเชิงลึกจาก Online_Retail_Cleaned_Final-1.csv</div>
+  </header>
+
+  <div class="main-container">
+    
+    <!-- Global Filter Control Panel -->
+    <section class="filter-panel card">
+      <div class="filter-title">
+        <i class="fa-solid fa-filter"></i> ตัวกรองหลัก (Global Filters)
+      </div>
+      <div class="filter-body">
+        <div class="filter-group">
+          <label for="countryFilter"><i class="fa-solid fa-globe"></i> ประเทศทั้งหมด (38 ประเทศ):</label>
+          <select id="countryFilter">
+            <option value="ALL">ทุกประเทศ (All Countries)</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="typeFilter"><i class="fa-solid fa-receipt"></i> ประเภทการขาย:</label>
+          <select id="typeFilter">
+            <option value="ALL">ทุกประเภท (Sale & Return)</option>
+            <option value="Sale">เฉพาะรายการขาย (Sale)</option>
+            <option value="Return/Cancelled">เฉพาะรายการคืนเงิน (Return)</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="yearFilter"><i class="fa-solid fa-calendar-days"></i> ปี:</label>
+          <select id="yearFilter">
+            <option value="ALL">ทุกปี</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="monthFilter"><i class="fa-solid fa-calendar"></i> เดือน:</label>
+          <select id="monthFilter">
+            <option value="ALL">ทุกเดือน</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button id="resetBtn" class="btn btn-reset">
+            <i class="fa-solid fa-rotate-left"></i> รีเซ็ตตัวกรองทั้งหมด
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI Metric Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card border-blue">
+        <div class="kpi-icon bg-blue"><i class="fa-solid fa-sterling-sign"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-title">มูลค่ารายการรวม</span>
+          <h3 id="kpiTotalSales">£0.00</h3>
+        </div>
+      </div>
+
+      <div class="kpi-card border-green">
+        <div class="kpi-icon bg-green"><i class="fa-solid fa-box-open"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-title">จำนวนชิ้นตามรายการ</span>
+          <h3 id="kpiTotalQty">0 ชิ้น</h3>
+        </div>
+      </div>
+
+      <div class="kpi-card border-purple">
+        <div class="kpi-icon bg-purple"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-title">จำนวนระเบียนรายการ</span>
+          <h3 id="kpiTotalOrders">0 รายการ</h3>
+        </div>
+      </div>
+
+      <div class="kpi-card border-orange">
+        <div class="kpi-icon bg-orange"><i class="fa-solid fa-earth-americas"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-title">จำนวนประเทศที่มีคำสั่งซื้อ</span>
+          <h3 id="kpiTotalCountries">0 ประเทศ</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Dashboard Charts Grid -->
+    <section class="charts-grid">
+      
+      <!-- Chart 1: Bar Chart (Top Products) -->
+      <div class="chart-card card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <h3><i class="fa-solid fa-ranking-star icon-pink"></i> 1. สินค้า 10 อันดับแรกตามมูลค่ารายการ</h3>
+            <p class="chart-subtitle">แกน X: มูลค่าหรือจำนวนชิ้น | แกน Y: รายชื่อสินค้า • ใช้ตัวกรองหลักร่วมกับแดชบอร์ด</p>
+          </div>
+          <!-- Local Filter -->
+          <div class="local-filter chart-tools">
+            <label for="localProductMetric">แสดงตาม</label>
+            <select id="localProductMetric">
+              <option value="value">มูลค่ารายการ (£)</option>
+              <option value="qty">จำนวนชิ้น</option>
+            </select>
+            <label for="localProductTop">จำนวนสินค้า</label>
+            <select id="localProductTop">
+              <option value="5">Top 5</option>
+              <option value="10" selected>Top 10</option>
+              <option value="15">Top 15</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-wrapper" id="barChart"></div>
+      </div>
+
+      <!-- Chart 2: Donut Chart (Country Share) -->
+      <div class="chart-card card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <h3><i class="fa-solid fa-pie-chart icon-purple"></i> 2. สัดส่วนยอดขายตามประเทศ (ครบ 100%)</h3>
+            <p class="chart-subtitle">สัดส่วนมูลค่ารายการตามประเทศ • สีแต่ละสีแทนประเทศ และคลิกเพื่อกรองแดชบอร์ด</p>
+          </div>
+        </div>
+        <div class="local-filter chart-tools">
+          <label for="localDonutTop">จำนวนประเทศ</label>
+          <select id="localDonutTop">
+            <option value="5" selected>Top 5 + อื่น ๆ</option>
+            <option value="10">Top 10 + อื่น ๆ</option>
+            <option value="999">ทุกประเทศ</option>
+          </select>
+        </div>
+        <div class="chart-wrapper" id="donutChart"></div>
+      </div>
+
+      <!-- Chart 3: Grouped Column Chart (Transaction Comparison) -->
+      <div class="chart-card card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <h3><i class="fa-solid fa-chart-column icon-orange"></i> 3. เปรียบเทียบมูลค่าการซื้อ (Sale) vs การคืนสินค้า (Return)</h3>
+            <p class="chart-subtitle">แกน X: ประเภทรายการ | แกน Y: มูลค่ารวม (£)</p>
+          </div>
+        </div>
+        <div class="chart-note"><span class="legend-dot sale"></span> Sale = รายการขาย &nbsp;&nbsp; <span class="legend-dot ret"></span> Return = รายการคืน/ยกเลิก • ใช้ตัวกรองหลักตามปกติ</div>
+        <div class="chart-wrapper" id="columnChart"></div>
+      </div>
+
+      <!-- Chart 4: Interactive Scatter Plot (Price vs Quantity) -->
+      <div class="chart-card card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <h3><i class="fa-solid fa-circle-dot icon-green"></i> 4. ความสัมพันธ์ระหว่างราคาต่อหน่วย กับ ปริมาณสั่งซื้อ</h3>
+            <p class="chart-subtitle">แต่ละจุดแทนรายการสินค้า • ใช้ดูความสัมพันธ์ระหว่างราคาและจำนวน</p>
+          </div>
+          <!-- Local Filter -->
+          <div class="local-filter chart-tools">
+            <label for="localScatterPrice">ช่วงราคาสูงสุด</label>
+            <select id="localScatterPrice">
+              <option value="all" selected>ทั้งหมด</option>
+              <option value="10">≤ £10</option>
+              <option value="50">≤ £50</option>
+              <option value="100">≤ £100</option>
+            </select>
+            <label for="localScatterQty">จำนวนขั้นต่ำ</label>
+            <select id="localScatterQty">
+              <option value="0" selected>ทั้งหมด</option>
+              <option value="2">≥ 2</option>
+              <option value="5">≥ 5</option>
+              <option value="10">≥ 10</option>
+            </select>
+            <button id="resetZoomBtn" class="btn-sm"><i class="fa-solid fa-search-minus"></i> รีเซ็ตการซูม</button>
+          </div>
+        </div>
+        <div class="chart-wrapper" id="scatterChart"></div>
+      </div>
+
+    </section>
+  </div>
+
+  <div id="tooltip" class="d3-tooltip"></div>
+
+  <script src="embedded_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
